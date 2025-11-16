@@ -1,6 +1,4 @@
 from flask import Flask, render_template, request, jsonify
-import speech_recognition as sr
-import pyttsx3
 import json
 import random
 import threading
@@ -271,8 +269,6 @@ class MultilingualTravelAssistant:
 
 # Initialize the assistant
 assistant = MultilingualTravelAssistant()
-recognizer = sr.Recognizer()
-tts_engine = pyttsx3.init()
 
 
 @app.route('/')
