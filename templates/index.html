@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual Travel Voice Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .language-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .language-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .message {
+            margin: 15px 0;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 80%;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-in;
+            white-space: pre-line;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: white;
+            border: 2px solid #e9ecef;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .system-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 90%;
+            color: #856404;
+            font-style: italic;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .controls {
+            padding: 25px;
+            background: white;
+            text-align: center;
+        }
+
+        .voice-controls {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            margin: 5px 10px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-voice {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #a4b0be 0%, #747d8c 100%);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+        }
+
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
+            color: white;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+
+        .btn-language {
+            background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+            color: white;
+            padding: 10px 15px;
+            font-size: 13px;
+        }
+
+        .language-controls {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .language-controls label {
+            font-weight: bold;
+            color: #2d3436;
+            margin-right: 10px;
+        }
+
+        .language-controls select {
+            padding: 10px 15px;
+            border: 2px solid #74b9ff;
+            border-radius: 25px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%) !important;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .language-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-left: 8px;
+            background: #ffeaa7;
+            color: #2d3436;
+            font-weight: bold;
+        }
+
+        .instructions {
+            background: #f1f3f4;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .instruction-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .instruction-item h4 {
+            color: #0984e3;
+            margin-bottom: 8px;
+        }
+
+        .instruction-item ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .instruction-item li {
+            padding: 3px 0;
+            color: #636e72;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .test-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Multilingual Travel Booking Assistant</h1>
+            <p>Complete end-to-end trip booking in English, Tamil, or Kannada!</p>
+            <div class="language-badges">
+                <span class="language-badge">🇺🇸 English</span>
+                <span class="language-badge">🇮🇳 தமிழ் (Tamil)</span>
+                <span class="language-badge">🇮🇳 ಕನ್ನಡ (Kannada)</span>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message system-message">
+                <div class="message-sender">🤖 Assistant</div>
+                Welcome! I'll help you book a complete trip. Just follow the conversation naturally!
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="voice-controls">
+                <button class="btn btn-voice" onclick="startBrowserVoice()" id="voiceBtn">
+                    🎤 Start Voice Recognition
+                </button>
+                <button class="btn btn-stop" onclick="stopVoiceRecognition()">
+                    ⏹️ Stop Listening
+                </button>
+                <button class="btn btn-reset" onclick="resetBooking()">
+                    🔄 New Booking
+                </button>
+            </div>
+
+            <div class="language-controls">
+                <label for="languageSelect">🎯 Response Language: </label>
+                <select id="languageSelect" onchange="setResponseLanguage(this.value)">
+                    <option value="auto">Auto Detect</option>
+                    <option value="tamil">தமிழ் (Tamil)</option>
+                    <option value="kannada">ಕನ್ನಡ (Kannada)</option>
+                    <option value="english">English</option>
+                </select>
+            </div>
+
+            <div class="test-buttons">
+                <button class="btn btn-test" onclick="testCommand('Hello! I want to book a trip')">
+                    👋 Start Booking (English)
+                </button>
+                <button class="btn btn-test" onclick="testCommand('Vanakkam, enakku trip book pannanum')">
+                    👋 Start Booking (Tamil)
+                </button>
+                <button class="btn btn-test" onclick="testCommand('Namaskara, nanage trip book madu')">
+                    👋 Start Booking (Kannada)
+                </button>
+                <button class="btn btn-test" onclick="testCommand('Goa')">
+                    🏖️ Destination: Goa
+                </button>
+                <button class="btn btn-test" onclick="testCommand('2 people')">
+                    👥 People: 2
+                </button>
+                <button class="btn btn-test" onclick="testCommand('Next week')">
+                    📅 Date: Next Week
+                </button>
+                <button class="btn btn-test" onclick="testCommand('3 days')">
+                    ⏰ Duration: 3 Days
+                </button>
+                <button class="btn btn-test" onclick="testCommand('Yes')">
+                    ✅ Confirm Booking
+                </button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>💡 Complete Booking Flow</h3>
+            <div class="instructions-grid">
+                <div class="instruction-item">
+                    <h4>🎤 Voice Booking</h4>
+                    <ul>
+                        <li>Click "Start Voice Recognition"</li>
+                        <li>Speak naturally in any language</li>
+                        <li>Follow the conversation flow</li>
+                        <li>Get booking confirmation!</li>
+                    </ul>
+                </div>
+                <div class="instruction-item">
+                    <h4>🗣️ Try Saying</h4>
+                    <ul>
+                        <li>"I want to book a trip to Goa"</li>
+                        <li>"2 people"</li>
+                        <li>"Next week"</li>
+                        <li>"3 days"</li>
+                        <li>"Yes" to confirm</li>
+                    </ul>
+                </div>
+                <div class="instruction-item">
+                    <h4>🌍 Multi-lingual</h4>
+                    <ul>
+                        <li>✓ English conversations</li>
+                        <li>✓ Tamil conversations</li>
+                        <li>✓ Kannada conversations</li>
+                        <li>✓ Complete booking flow</li>
+                        <li>✓ Booking confirmation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let recognition = null;
+    let currentLanguage = 'en-US';
+    let forcedLanguage = 'auto';
+    let currentUser = 'user_' + Math.random().toString(36).substr(2, 9);
+
+    // ========== BROWSER TTS FUNCTION (WITH EMOJI REMOVAL) ==========
+function speakWithBrowserTTS(text, language = 'en') {
+    console.log('🔊 Speaking:', text, 'Language:', language);
+
+    // Remove emojis and special formatting from text for speech
+    const cleanText = text
+        .replace(/[^\w\s\.,!?;:-]/g, ' ') // Remove emojis and special characters
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim();
+
+    console.log('🔊 Cleaned text for TTS:', cleanText);
+
+    if ('speechSynthesis' in window) {
+        // Stop any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+
+        // Set language based on detection
+        if (language === 'tamil' || text.includes('Vanakkam') || text.includes('por') || text.includes('pannanum')) {
+            utterance.lang = 'ta-IN'; // Tamil
+            console.log('🎯 Setting language: Tamil');
+        } else if (language === 'kannada' || text.includes('Namaskara') || text.includes('ge') || text.includes('madu')) {
+            utterance.lang = 'kn-IN'; // Kannada
+            console.log('🎯 Setting language: Kannada');
+        } else {
+            utterance.lang = 'en-US'; // English
+            console.log('🎯 Setting language: English');
+        }
+
+        utterance.rate = 0.8;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        // Wait for voices to load
+        const voices = window.speechSynthesis.getVoices();
+        console.log('🎙️ Available voices:', voices.map(v => v.lang));
+
+        // Try to find appropriate voice
+        const preferredVoice = voices.find(v => v.lang === utterance.lang);
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+            console.log('✅ Using voice:', preferredVoice.name);
+        }
+
+        window.speechSynthesis.speak(utterance);
+
+        utterance.onstart = function() {
+            console.log('🔊 TTS started speaking');
+        };
+
+        utterance.onend = function() {
+            console.log('🔊 TTS finished speaking');
+        };
+
+        // Fallback to server TTS if browser TTS fails
+        utterance.onerror = function(event) {
+            console.log('❌ Browser TTS failed, falling back to server TTS');
+            fetch('/speak', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: cleanText})
+            });
+        };
+
+    } else {
+        console.log('❌ Browser TTS not supported, using server TTS');
+        // Fallback to server TTS
+        fetch('/speak', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text: cleanText})
+        });
+    }
+}
+
+    // ========== EXISTING FUNCTIONS ==========
+    function addMessage(sender, message, language = '') {
+        const container = document.getElementById('chatContainer');
+        const messageDiv = document.createElement('div');
+
+        let languageBadge = '';
+        if (language) {
+            const langNames = {
+                'english': '🇺🇸 EN',
+                'tamil': '🇮🇳 TA',
+                'kannada': '🇮🇳 KN'
+            };
+            languageBadge = `<span class="language-indicator">${langNames[language] || '🌍'}</span>`;
+        }
+
+        messageDiv.className = `${sender}-message message`;
+        messageDiv.innerHTML = `
+            <div class="message-sender">${sender === 'user' ? '👤 You' : '🤖 Assistant'} ${languageBadge}</div>
+            ${message}
+        `;
+
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function updateVoiceButton(listening) {
+        const voiceBtn = document.getElementById('voiceBtn');
+        if (listening) {
+            voiceBtn.classList.add('listening');
+            voiceBtn.innerHTML = '🔴 Listening... Speak Now';
+        } else {
+            voiceBtn.classList.remove('listening');
+            voiceBtn.innerHTML = '🎤 Start Voice Recognition';
+        }
+    }
+
+    function setResponseLanguage(lang) {
+    forcedLanguage = lang;
+    const langNames = {
+        'auto': 'Auto Detect',
+        'tamil': 'தமிழ் (Tamil)',
+        'kannada': 'ಕನ್ನಡ (Kannada)',
+        'english': 'English'
+    };
+    addMessage('system', `Response language forced to: ${langNames[lang]}`);
+
+    // Auto-start conversation in selected language
+    if (lang === 'tamil') {
+        setTimeout(() => {
+            testCommand('வணக்கம்');
+        }, 500);
+    } else if (lang === 'kannada') {
+        setTimeout(() => {
+            testCommand('ನಮಸ್ಕಾರ');
+        }, 500);
+    }
+}
+
+    function resetBooking() {
+        fetch('/reset_booking', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user_id: currentUser})
+        })
+        .then(() => {
+            addMessage('system', '🔄 Booking reset. Starting fresh conversation!');
+            setTimeout(() => {
+                testCommand('I want to book a trip');
+            }, 1000);
+        })
+        .catch(error => {
+            addMessage('system', '❌ Error resetting booking: ' + error.message);
+        });
+    }
+
+    function startBrowserVoice() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            addMessage('system', '❌ Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.');
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = currentLanguage;
+
+        updateVoiceButton(true);
+        addMessage('user', '🎤 Listening...', 'english');
+
+        recognition.start();
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            updateVoiceButton(false);
+
+            let detectedLang = forcedLanguage === 'auto' ? 'english' : forcedLanguage;
+
+            if (forcedLanguage === 'auto') {
+                if (transcript.toLowerCase().includes('vanakkam') || transcript.includes('por') || transcript.includes('pannanum')) {
+                    detectedLang = 'tamil';
+                } else if (transcript.toLowerCase().includes('namaskara') || transcript.includes('ge') || transcript.includes('madu')) {
+                    detectedLang = 'kannada';
+                }
+            } else {
+                detectedLang = forcedLanguage;
+            }
+
+            addMessage('user', transcript, detectedLang);
+
+            fetch('/process_voice', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    text: transcript,
+                    user_id: currentUser,
+                    language: forcedLanguage === 'auto' ? null : forcedLanguage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage('bot', data.response, data.language);
+
+                // 🔽 THIS IS THE KEY LINE - CALL BROWSER TTS 🔽
+                speakWithBrowserTTS(data.response, data.language);
+            })
+            .catch(error => {
+                addMessage('system', '❌ Error connecting to server: ' + error.message);
+            });
+        };
+
+        recognition.onerror = function(event) {
+            updateVoiceButton(false);
+            if (event.error === 'not-allowed') {
+                addMessage('system', '❌ Microphone access denied. Please allow microphone permissions.');
+            } else {
+                addMessage('system', '❌ Voice recognition error: ' + event.error);
+            }
+        };
+
+        recognition.onend = function() {
+            updateVoiceButton(false);
+        };
+    }
+
+    function stopVoiceRecognition() {
+        if (recognition) {
+            recognition.stop();
+            updateVoiceButton(false);
+            addMessage('system', '⏹️ Voice recognition stopped');
+        }
+    }
+
+    function testCommand(command) {
+        let detectedLang = forcedLanguage === 'auto' ? 'english' : forcedLanguage;
+
+        if (forcedLanguage === 'auto') {
+            if (command.toLowerCase().includes('vanakkam') || command.includes('por') || command.includes('pannanum')) {
+                detectedLang = 'tamil';
+            } else if (command.toLowerCase().includes('namaskara') || command.includes('ge') || command.includes('madu')) {
+                detectedLang = 'kannada';
+            }
+        } else {
+            detectedLang = forcedLanguage;
+        }
+
+        addMessage('user', command, detectedLang);
+
+        fetch('/send_message', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                message: command,
+                user_id: currentUser,
+                language: forcedLanguage === 'auto' ? null : forcedLanguage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addMessage('bot', data.response, data.language);
+
+            // 🔽 THIS IS THE KEY LINE - CALL BROWSER TTS 🔽
+            speakWithBrowserTTS(data.response, data.language);
+        })
+        .catch(error => {
+            addMessage('system', '❌ Error: ' + error.message);
+        });
+    }
+
+    // Auto welcome message
+    setTimeout(() => {
+        addMessage('system', '💡 Click "Start Voice Recognition" or use test buttons to begin your booking!');
+    }, 1000);
+
+    // Load voices when page is ready
+    window.addEventListener('load', function() {
+        // Trigger voices to load
+        const voices = window.speechSynthesis.getVoices();
+        console.log('🎙️ Voices available on load:', voices);
+
+        // Some browsers need this event
+        window.speechSynthesis.onvoiceschanged = function() {
+            console.log('🎙️ Voices changed, now available:', window.speechSynthesis.getVoices());
+        };
+    });
+    </script>
+</body>
+</html>

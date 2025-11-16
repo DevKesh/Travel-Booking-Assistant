@@ -1,0 +1,5 @@
+flask==2.3.3
+speechrecognition==3.10.0
+pyttsx3==2.90
+requests==2.31.0
+# pyaudio might cause issues on Railway, so we'll handle voice via browser
