@@ -325,6 +325,9 @@ def speak():
 
     return jsonify({'status': 'success'})
 
+@app.route('/start_listening')
+def start_listening():
+    return jsonify({"text": "Voice recognition is handled by your browser. Please use the browser's voice feature."})
 
 @app.route('/reset_booking', methods=['POST'])
 def reset_booking():
