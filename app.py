@@ -1,8 +1,7 @@
-from flask import Flask, render_template, request, jsonify
-import json
 import random
-import threading
 from datetime import datetime, timedelta
+
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
@@ -308,18 +307,8 @@ def process_voice():
 
 @app.route('/speak', methods=['POST'])
 def speak():
-    data = request.json
-    text = data.get('text', '')
-
-    def speak_text():
-        tts_engine.say(text)
-        tts_engine.runAndWait()
-
-    thread = threading.Thread(target=speak_text)
-    thread.daemon = True
-    thread.start()
-
-    return jsonify({'status': 'success'})
+    # Voice is handled by browser - just return success
+    return jsonify({'status': 'voice_handled_by_browser'})
 
 @app.route('/start_listening')
 def start_listening():
